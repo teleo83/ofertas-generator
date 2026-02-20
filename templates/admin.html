@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+<h2>👑 Dashboard Admin</h2>
+
+<p><strong>Total Usuários:</strong> {{ total_users }}</p>
+<p><strong>Usuários Ativos:</strong> {{ total_active }}</p>
+<p><strong>Usuários PRO:</strong> {{ total_pro }}</p>
+</div>
+
+<div class="card">
+<h3>Lista de Usuários</h3>
+
+<table width="100%">
+<tr>
+<th>ID</th>
+<th>Nome</th>
+<th>Email</th>
+<th>Plano</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+
+{% for user in users %}
+<tr>
+<td>{{ user._id }}</td>
+<td>{{ user.name }}</td>
+<td>{{ user.email }}</td>
+<td>{{ user.plan }}</td>
+<td>
+{% if user.blocked %}
+🔴 Inativo
+{% else %}
+🟢 Ativo
+{% endif %}
+</td>
+<td>
+<a href="/admin/toggle/{{ user._id }}">
+<button>Ativar/Inativar</button>
+</a>
+
+<a href="/admin/plan/{{ user._id }}">
+<button>Trocar Plano</button>
+</a>
+</td>
+</tr>
+{% endfor %}
+
+</table>
+
+</div>
+
+{% endblock %}

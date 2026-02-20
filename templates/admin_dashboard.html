@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="admin-container">
+
+    <h2 class="admin-title">👑 Dashboard Admin</h2>
+
+    <!-- Cards resumo -->
+    <div class="admin-cards">
+        <div class="card">
+            <h3>{{ total_usuarios }}</h3>
+            <p>Total de Usuários</p>
+        </div>
+
+        <div class="card">
+            <h3>{{ total_api_configurada }}</h3>
+            <p>Com API Configurada</p>
+        </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="admin-table-wrapper">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Ofertas</th>
+                    <th>Plano</th>
+                    <th>Ações</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td>{{ u._id|string|truncate(8, True, '') }}</td>
+                    <td>{{ u.nome or '-' }}</td>
+                    <td>{{ u.email }}</td>
+
+                    <td>
+                        {% if u.ativo %}
+                            <span class="badge badge-active">Ativo</span>
+                        {% else %}
+                            <span class="badge badge-inactive">Inativo</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.ofertas_geradas or 0 }}</td>
+
+                    <td>
+                        {% if u.plano == "vitalicio" %}
+                            <span class="badge badge-premium">Vitalício</span>
+                        {% else %}
+                            <span class="badge badge-free">Free</span>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if u.role != "admin" %}
+                            <a class="btn btn-toggle"
+                               href="{{ url_for('admin.toggle_user', user_id=u._id) }}">
+                                🔄 Status
+                            </a>
+
+                            <a class="btn btn-plan"
+                               href="{{ url_for('admin.toggle_plan', user_id=u._id) }}">
+                                💰 Plano
+                            </a>
+                        {% else %}
+                            <span class="badge badge-admin">Admin</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}

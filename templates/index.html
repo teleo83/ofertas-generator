@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Central de Divulgação Shopee</title>
+</head>
+<body>
+
+<h2>Central de Divulgação Automática</h2>
+
+<form method="POST">
+    <input type="text" name="link" placeholder="Cole o link da Shopee aqui" required style="width:400px;">
+    <br><br>
+    <button type="submit">Gerar Oferta</button>
+</form>
+
+{% if markdown %}
+<hr>
+<h3>Mensagem:</h3>
+
+<textarea id="resultado" rows="12" cols="100">{{ markdown }}</textarea>
+<br><br>
+
+<button onclick="copiarTexto()">📋 Copiar</button>
+
+{% if link_publicacao %}
+
+<br><br>
+
+<h3>Publicar em:</h3>
+
+<a target="_blank"
+href="https://t.me/share/url?url={{ link_publicacao }}&text={{ markdown | urlencode }}">
+<button>🟦 Telegram</button>
+</a>
+
+<a target="_blank"
+href="https://api.whatsapp.com/send?text={{ markdown | urlencode }}">
+<button>🟢 WhatsApp</button>
+</a>
+
+<a target="_blank"
+href="https://www.facebook.com/sharer/sharer.php?u={{ link_publicacao }}">
+<button>🔵 Facebook</button>
+</a>
+
+<a target="_blank"
+href="https://www.instagram.com/">
+<button>🟣 Instagram (Manual)</button>
+</a>
+
+{% endif %}
+{% endif %}
+
+<script>
+function copiarTexto() {
+    var texto = document.getElementById("resultado");
+    texto.select();
+    document.execCommand("copy");
+    alert("Texto copiado!");
+}
+</script>
+
+</body>
+</html>

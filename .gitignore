@@ -1,0 +1,20 @@
+# Ambiente virtual
+.venv/
+venv/
+
+# Arquivos sensíveis
+.env
+
+# Cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Mongo local
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

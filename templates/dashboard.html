@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="card">
+    <h2>Gerador de Oferta</h2>
+    <form method="POST">
+        <input type="text" name="link" placeholder="Cole o link da Shopee aqui" required>
+        <button class="btn-primary">Gerar Oferta</button>
+    </form>
+</div>
+
+{% if mensagem %}
+<div class="card">
+
+    <h3>Mensagem Gerada</h3>
+
+    <textarea id="mensagem" rows="12">{{ mensagem }}</textarea>
+
+    <div style="display:flex; gap:10px; margin-top:15px;">
+
+        <button type="button" onclick="copiarMensagem()" class="btn-copy">
+            📋 Copiar
+        </button>
+
+        <form method="POST" action="{{ url_for('telegram.publish') }}" onsubmit="return prepararEnvio()">
+            <input type="hidden" name="message" id="hiddenMessage">
+            <button type="submit" class="btn-telegram">
+                📤 Telegram
+            </button>
+        </form>
+
+    </div>
+
+</div>
+
+<script>
+function copiarTexto(){
+    var copyText=document.getElementById("resultado");
+    copyText.select();
+    document.execCommand("copy");
+    alert("Copiado!");
+}
+</script>
+<script>
+
+function copiarMensagem() {
+    const texto = document.getElementById("mensagem");
+    texto.select();
+    texto.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(texto.value);
+    alert("Mensagem copiada!");
+}
+
+function prepararEnvio() {
+    const textoAtual = document.getElementById("mensagem").value;
+    document.getElementById("hiddenMessage").value = textoAtual;
+    return true;
+}
+
+</script>
+
+{% endif %}
+
+{% endblock %}
