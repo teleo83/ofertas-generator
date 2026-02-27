@@ -266,10 +266,54 @@ def gerar_oferta_real(link, user):
 # ==========================================
 # ROTA DASHBOARD
 # ==========================================
+from datetime import datetime
+
 @dashboard_bp.route("/")
 @dashboard_bp.route("/dashboard", methods=["GET", "POST"])
 @login_required
 def dashboard():
+
+    mensagem = None
+
+    user = mongo.db.users.find_one({"_id": ObjectId(current_user.id)})
+
+    plano = user.get("plan", "free")
+    ofertas_dia = user.get("ofertas_dia", 0)
+    ultimo_reset = user.get("ultimo_reset")
+
+    now = datetime.utcnow()
+
+    # Reset diário automático
+    if not ultimo_reset or ultimo_reset.date() != now.date():
+        mongo.db.users.update_one(
+            {"_id": ObjectId(current_user.id)},
+            {
+                "$set": {
+                    "ofertas_dia": 0,
+                    "ultimo_reset": now
+                }
+            }
+        )
+        ofertas_dia = 0
+
+    if request.method == "POST":
+        link = request.form.get("link")
+
+        if link:
+            mensagem = gerar_oferta_real(link, user)
+
+            if mensagem and "OFERTA DO DIA" in mensagem:
+                mongo.db.users.update_one(
+                    {"_id": ObjectId(current_user.id)},
+                    {"$inc": {"ofertas_geradas": 1}}
+                )
+
+    return render_template(
+        "dashboard.html",
+        mensagem=mensagem,
+        telegram_posts_today=ofertas_dia,
+        plano=plano
+    )
 
     mensagem = None
 
