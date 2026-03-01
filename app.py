@@ -2,6 +2,7 @@ from flask import Flask
 from config import Config
 from extensions import login_manager, mongo
 from routes.telegram import telegram_bp
+from routes.upgrade import upgrade_bp
 
 
 def create_app():
@@ -33,6 +34,7 @@ def create_app():
     app.register_blueprint(settings_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(telegram_bp)
+    app.register_blueprint(upgrade_bp)
 
     return app
 

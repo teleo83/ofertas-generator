@@ -71,12 +71,12 @@ def toggle_plan(user_id):
     if usuario["role"] == "admin":
         return redirect(url_for("admin.admin_dashboard"))
 
-    plano_atual = usuario.get("plano", "free")
+    plano_atual = usuario.get("plan", "free")
     novo_plano = "vitalicio" if plano_atual == "free" else "free"
 
     mongo.db.users.update_one(
         {"_id": ObjectId(user_id)},
-        {"$set": {"plano": novo_plano}}
+        {"$set": {"plan": novo_plano}}
     )
 
     return redirect(url_for("admin.admin_dashboard"))
