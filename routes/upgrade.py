@@ -1,13 +1,21 @@
+import os
 import mercadopago
 from flask import Blueprint, render_template, redirect, request, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from extensions import mongo
 from bson.objectid import ObjectId
-from config import Config
 
 upgrade_bp = Blueprint("upgrade", __name__)
 
-sdk = mercadopago.SDK(Config.MP_ACCESS_TOKEN)
+# =========================================
+# MERCADO PAGO SDK (SEGURO PARA PRODUÇÃO)
+# =========================================
+mp_token = os.getenv("MP_ACCESS_TOKEN")
+
+if not mp_token:
+    raise RuntimeError("MP_ACCESS_TOKEN não configurado no ambiente")
+
+sdk = mercadopago.SDK(mp_token)
 
 
 # ===============================
@@ -30,7 +38,7 @@ def create_checkout():
 
     if plano == "premium":
         titulo = "Plano Premium - Ofertas Generator"
-        preco = 1.90  # TESTE SANDBOX
+        preco = 1.90  # SANDBOX
     elif plano == "vitalicio":
         titulo = "Plano Vitalício - Ofertas Generator"
         preco = 5.00
@@ -46,18 +54,15 @@ def create_checkout():
                 "currency_id": "BRL"
             }
         ],
-        # 🔥 Guarda qual plano foi comprado
         "metadata": {
             "plan": plano
         },
-        # 🔥 Guarda qual usuário pagou
         "external_reference": str(current_user.id),
         "back_urls": {
             "success": url_for("upgrade.success", _external=True),
             "failure": url_for("upgrade.upgrade", _external=True),
             "pending": url_for("upgrade.upgrade", _external=True)
         },
-        # 🔥 Webhook automático
         "notification_url": url_for("upgrade.webhook", _external=True)
     }
 
@@ -83,7 +88,6 @@ def create_checkout():
 
 # ===============================
 # SUCCESS (APENAS VISUAL)
-# NÃO ATUALIZA PLANO
 # ===============================
 @upgrade_bp.route("/success")
 @login_required
@@ -105,7 +109,6 @@ def webhook():
     if not data:
         return jsonify({"status": "no data"}), 400
 
-    # Apenas pagamentos
     if data.get("type") == "payment":
 
         payment_id = data.get("data", {}).get("id")
@@ -119,7 +122,6 @@ def webhook():
         print("=== DETALHES PAGAMENTO ===")
         print(payment)
 
-        # 🔥 Só atualiza se aprovado
         if payment.get("status") == "approved":
 
             user_id = payment.get("external_reference")
