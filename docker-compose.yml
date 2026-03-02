@@ -1,18 +1,12 @@
-version: "3.9"
-
 services:
   app:
     build: .
-    container_name: ofertas_app
-    restart: always      
-    ports:
-      - "8000:8000"
+    restart: always
     depends_on:
       - mongodb
 
   mongodb:
     image: mongo:6
-    container_name: ofertas_mongo
     restart: always
     volumes:
       - mongo_data:/data/db
