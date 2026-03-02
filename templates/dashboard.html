@@ -1,21 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- ============================= -->
-<!-- CONTADOR DE USO -->
-<!-- ============================= -->
-
+<!-- CONTADOR -->
 <div style="background:#1f1f2e; padding:20px; border-radius:12px; margin-bottom:20px; color:white;">
-
     <h3>📤 Envios hoje</h3>
 
     {% if plano == "free" %}
         <div style="width:100%; height:12px; background:#333; border-radius:10px; margin:10px 0;">
-            <div style="height:100%; 
-                        width: {{ (telegram_posts_today / 3 * 100) }}%; 
-                        background:linear-gradient(90deg,#00c6ff,#0072ff); 
-                        border-radius:10px;">
-            </div>
+            <div style="height:100%; width: {{ (telegram_posts_today / 3 * 100) }}%; background:linear-gradient(90deg,#00c6ff,#0072ff); border-radius:10px;"></div>
         </div>
 
         <p>{{ telegram_posts_today }} de 3 envios utilizados</p>
@@ -24,21 +16,15 @@
             <p style="color:#ff4d4d;">❌ Limite diário atingido</p>
         {% endif %}
 
-        <a href="/upgrade" 
-           style="display:inline-block; margin-top:10px; padding:8px 14px; background:#ff9800; border-radius:8px; text-decoration:none; color:white;">
-           🚀 Seja Premium
+        <a href="/upgrade" style="display:inline-block; margin-top:10px; padding:8px 14px; background:#ff9800; border-radius:8px; text-decoration:none; color:white;">
+            🚀 Seja Premium
         </a>
-
     {% else %}
         <p style="color:#00ff88;">🚀 Plano Premium Ativo (Envios ilimitados)</p>
     {% endif %}
-
 </div>
 
-<!-- ============================= -->
-<!-- GERADOR DE OFERTA -->
-<!-- ============================= -->
-
+<!-- GERADOR -->
 <div class="card">
     <h2>Gerador de Oferta</h2>
     <form method="POST">
@@ -80,14 +66,13 @@
 function copiarMensagem() {
     const texto = document.getElementById("mensagem");
     texto.select();
-    texto.setSelectionRange(0, 99999);
     navigator.clipboard.writeText(texto.value);
     alert("Mensagem copiada!");
 }
 
 function prepararEnvio() {
-    const textoAtual = document.getElementById("mensagem").value;
-    document.getElementById("hiddenMessage").value = textoAtual;
+    document.getElementById("hiddenMessage").value =
+        document.getElementById("mensagem").value;
     return true;
 }
 
@@ -101,14 +86,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
             let msg = document.getElementById("mensagem").value;
 
-            // Converte HTML para formato WhatsApp
+            // Formatação WhatsApp
             msg = msg.replace(/<b>/g, "*").replace(/<\/b>/g, "*");
             msg = msg.replace(/<a href="([^"]+)">([^<]+)<\/a>/g, "$2\n$1");
             msg = msg.replace(/<[^>]*>?/gm, "");
 
             const whatsappUrl = "https://wa.me/?text=" + encodeURIComponent(msg);
 
-            const novaJanela = window.open("", "_blank", "width=500,height=700");
+            // 🔥 CORREÇÃO IMPORTANTE AQUI
+            const imagem = {{ imagem_url | tojson | safe }};
+
+            const novaJanela = window.open("", "_blank", "width=500,height=750");
 
             novaJanela.document.write(`
                 <html>
@@ -127,8 +115,13 @@ document.addEventListener("DOMContentLoaded", function() {
                             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
                             white-space: pre-line;
                         }
+                        img {
+                            width: 100%;
+                            border-radius: 10px;
+                            margin-bottom: 10px;
+                        }
                         .btn {
-                            margin-top: 15px;
+                            margin-top: 10px;
                             padding: 10px;
                             border: none;
                             border-radius: 8px;
@@ -148,10 +141,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 <body>
 
                     <div class="card">
+
+                        ${imagem ? `<img src="${imagem}">` : ""}
+
                         ${msg}
 
                         <button class="btn btn-copy" onclick="copiar()">📋 Copiar</button>
                         <button class="btn btn-open" onclick="abrir()">📱 Abrir no WhatsApp</button>
+
                     </div>
 
                     <script>

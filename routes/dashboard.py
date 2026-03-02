@@ -23,14 +23,14 @@ def gerar_oferta_real(link, user):
     CLIENT_SECRET = user.get("shopee_client_secret")
 
     if not CLIENT_ID or not CLIENT_SECRET:
-        return "⚠ Configure a API da Shopee primeiro."
+        return None, "⚠ Configure a API da Shopee primeiro."
 
     try:
         if "s.shopee.com.br" in link:
             response = requests.get(link, allow_redirects=True, timeout=10)
             link = response.url
     except:
-        return "Erro ao expandir link da Shopee."
+        return None, "Erro ao expandir link da Shopee."
 
     shop_id = None
     item_id = None
@@ -57,10 +57,10 @@ def gerar_oferta_real(link, user):
                 item_id = parts[-1]
 
         if not shop_id or not item_id:
-            return f"❌ Não foi possível extrair IDs desse link.\n\nLink recebido:\n{link}"
+            return None, f"❌ Não foi possível extrair IDs desse link.\n\nLink recebido:\n{link}"
 
     except Exception as e:
-        return f"Erro ao processar link: {str(e)}"
+        return None, f"Erro ao processar link: {str(e)}"
 
     query = f"""
     query {{
@@ -101,12 +101,12 @@ def gerar_oferta_real(link, user):
         )
         data = response.json()
     except:
-        return "❌ Erro ao conectar com API Shopee."
+        return None, "❌ Erro ao conectar com API Shopee."
 
     nodes = data.get("data", {}).get("productOfferV2", {}).get("nodes", [])
 
     if not nodes:
-        return "❌ Produto não encontrado na API."
+        return None, "❌ Produto não encontrado na API."
 
     produto = nodes[0]
 
@@ -114,6 +114,7 @@ def gerar_oferta_real(link, user):
     preco_raw = produto.get("priceMin", 0)
     link_final = produto.get("offerLink", link)
     vendas = produto.get("sales", 0)
+    imagem_url = produto.get("imageUrl")
 
     try:
         preco = f"R$ {float(preco_raw):,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
@@ -130,7 +131,7 @@ def gerar_oferta_real(link, user):
 👉 <a href="{link_final}">🎯 VER OFERTA COMPLETA AQUI</a>
 """
 
-    return mensagem
+    return imagem_url, mensagem
 
 
 # ==========================================
@@ -142,6 +143,7 @@ def gerar_oferta_real(link, user):
 def dashboard():
 
     mensagem = None
+    imagem_url = None
 
     user = mongo.db.users.find_one({"_id": ObjectId(current_user.id)})
 
@@ -151,14 +153,12 @@ def dashboard():
 
     now = datetime.utcnow()
 
-    # 🔥 PROTEÇÃO CONTRA STRING
     if isinstance(ultimo_reset, str):
         try:
             ultimo_reset = datetime.fromisoformat(ultimo_reset)
         except:
             ultimo_reset = None
 
-    # RESET DIÁRIO
     if not ultimo_reset or ultimo_reset.date() != now.date():
         mongo.db.users.update_one(
             {"_id": ObjectId(current_user.id)},
@@ -175,7 +175,7 @@ def dashboard():
         link = request.form.get("link")
 
         if link:
-            mensagem = gerar_oferta_real(link, user)
+            imagem_url, mensagem = gerar_oferta_real(link, user)
 
             if mensagem and "OFERTA DO DIA" in mensagem:
                 mongo.db.users.update_one(
@@ -186,6 +186,7 @@ def dashboard():
     return render_template(
         "dashboard.html",
         mensagem=mensagem,
+        imagem_url=imagem_url,
         telegram_posts_today=ofertas_dia,
         plano=plano
     )
