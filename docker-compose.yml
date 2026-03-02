@@ -4,9 +4,7 @@ services:
   app:
     build: .
     container_name: ofertas_app
-    restart: always
-    env_file:
-      - .env
+    restart: always      
     ports:
       - "8000:8000"
     depends_on:
