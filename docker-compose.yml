@@ -2,6 +2,8 @@ services:
   app:
     build: .
     restart: always
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/ofertas_saas
     depends_on:
       - mongodb
 
